@@ -26,4 +26,4 @@ COPY . .
 EXPOSE 6000
 
 # Run server
-CMD ["node", "server.js"]
+CMD ["node", "src/server.js"]
