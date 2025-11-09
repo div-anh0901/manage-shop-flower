@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./web-temp
+    build: ./web
     container_name: react_frontend_flower
     ports:
       - "8080:80"
