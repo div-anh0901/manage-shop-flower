@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./service
+    container_name: express_backend_flower
+    ports:
+      - "6000:6000"
+    env_file:
+      - ./service/.env
+    restart: unless-stopped
+
+  frontend:
+    build: ./web
+    container_name: react_frontend_flower
+    ports:
+      - "8080:80"
+    restart: unless-stopped

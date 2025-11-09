@@ -1,0 +1,1 @@
+git@github.com:DevExpress/devextreme-react-template.git
