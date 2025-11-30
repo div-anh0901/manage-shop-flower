@@ -23,7 +23,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY . .
 
 # Expose port
-EXPOSE 6000
+EXPOSE 5001
 
 # Run server
 CMD ["node", "src/server.js"]

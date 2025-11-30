@@ -5,7 +5,7 @@ services:
     build: ./service
     container_name: express_backend_flower
     ports:
-      - "6000:6000"
+      - "5001:5001"
     env_file:
       - ./service/.env
     restart: unless-stopped
