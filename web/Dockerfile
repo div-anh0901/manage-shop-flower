@@ -9,8 +9,8 @@ RUN npm install
 # Copy toàn bộ source code
 COPY . .
 
-# Build project production
-RUN npm run build
+# Build project production với Node RAM limit
+RUN NODE_OPTIONS="--max-old-space-size=1024" npm run build
 
 # Stage 2: Serve với Nginx
 FROM nginx:alpine
