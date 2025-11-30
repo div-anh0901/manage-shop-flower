@@ -11,9 +11,10 @@ const logMiddleware = require("./utils/logMiddleware");
 const path = require("path");
 dotenv.config();
 const app = express();
+const allowedOrigins = process?.env?.FRONTEND_URLS.split(',');
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: allowedOrigins,
   methods: ['GET','POST','PUT','DELETE','OPTIONS'],
 }));
 
