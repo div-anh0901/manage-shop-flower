@@ -1,27 +1,16 @@
 const mongoose = require("mongoose");
+const { STATUS_FLOWER } = require("./contants/FlowerContant");
 
 const FlowerSchema = new mongoose.Schema({
-
-    name: { type: String, required: true, trim: true }, // e.g., "Rose"
-    latinName: { type: String, trim: true },            // e.g., "Rosa"
-    category: {type: String},
-    
-    // Default/base attributes (can be overridden per variant)
-    defaultColor: { type: String, trim: true },
-    defaultStemLengthCm: { type: Number, min: 0 },
-    basePrice: { type: Number, min: 0 },  // used if no variants
-    baseCost: { type: Number, min: 0 },
-    currency: { type: String, default: "VND", uppercase: true },   
-    suppliers: {type: String},
-
-    // Meta
+    name: { type: String, required: true, trim: true },
+    code: {type: String, required: true, trim: true },
+    category: { type: String },
+    basePrice: { type: Number, min: 0 },
+    currentPrice: { type: Number, min: 0 },
     images: [{ type: String }],
     description: { type: String, trim: true },
-    originCountry: { type: String, trim: true, uppercase: true }, // e.g., "VN", "NL"
-    seasonal: { type: Boolean, default: false },
-    status: { type: String, enum: ["Active", "Inactive", "Archived"], default: "Active", index: true },
-    isDeleted: { type: Boolean, default: false }, // soft delete
-
+    status: { type: String, enum: [STATUS_FLOWER.ACTIVE, STATUS_FLOWER.LOCK],default: STATUS_FLOWER.ACTIVE, index: true },
+    isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

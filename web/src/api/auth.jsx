@@ -21,7 +21,6 @@ export async function signIn(email, password) {
 export async function getUser() {
   try {
     // Send request
-
     return {
       isOk: true,
       data: defaultUser

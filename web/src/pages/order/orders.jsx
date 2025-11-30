@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
-import { DataSource } from 'devextreme-react/common/data';
+import DataSource from "devextreme/data/data_source";
 import DataGrid, { Column, Pager, Paging, FilterRow, Lookup, Button } from 'devextreme-react/data-grid';
+import CustomStore from "devextreme/data/custom_store";
 import { Popup } from 'devextreme-react/popup';
 import { Form, SimpleItem, Label } from 'devextreme-react/form';
 import './orders.scss';
+import API from '../../api/axios';
+import { useEffect } from 'react';
 
 export function Orders() {
   // === Popup states ===
   const [isCreatePopupVisible, setCreatePopupVisible] = useState(false);
   const [isImportPopupVisible, setImportPopupVisible] = useState(false);
   const [isFilterPopupVisible, setFilterPopupVisible] = useState(false);
+  const [isProductPopupVisible, setProductPopupVisible] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState([]); // checkbox
+
+   const [dsProducts, setDsProducts] = useState(flowerDataSource({}));
 
   // === Form data ===
   const [newOrder, setNewOrder] = useState({
@@ -32,7 +39,7 @@ export function Orders() {
   // === Handlers ===
   const handleCreate = () => setCreatePopupVisible(true);
   const handleImport = () => setImportPopupVisible(true);
-  const handleFilter = () => setFilterPopupVisible(true);
+  const handleFilter = () => setFilterPopupVie(true);
   const handleExport = () => console.log('⬇ Export button clicked!');
 
   const handleSaveOrder = () => {
@@ -53,22 +60,27 @@ export function Orders() {
     setFilterPopupVisible(false);
   };
 
-
   // state quản lý sản phẩm
   const [orderProducts, setOrderProducts] = useState([]);
   const [totalCost, setTotalCost] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
   const handleAddProduct = () => {
-    setOrderProducts([
-      ...orderProducts,
-      { id: Date.now(), code: '', name: '', quantity: 1, cost: 0, price: 0 }
-    ]);
+    setProductPopupVisible(true);
   };
+
+  useEffect(() =>{
+    handleUpdateTotals()
+  } ,[orderProducts])
 
   const handleRemoveProduct = (id) => {
     setOrderProducts(orderProducts.filter(p => p.id !== id));
-    handleUpdateTotals();
+      // update selectedProducts (an toàn với concurrent updates)
+    setSelectedProducts(prev => {
+      const newSelected = prev.filter(p => p._id !== id && p.id !== id);
+      console.log("after remove ->", newSelected); // in giá trị mới ngay trong updater
+      return newSelected;
+    });
   };
 
   const handleUpdateTotals = () => {
@@ -78,6 +90,27 @@ export function Orders() {
     setTotalPrice(priceSum);
   };
 
+  const handleAddSelectedProducts = () => {
+    if (!selectedProducts.length) return;
+    const mapped = selectedProducts
+    .map(p => ({
+      id: p._id,
+      code: p.code,
+      name: p.name,
+      quantity: 1,
+      cost: p.basePrice,
+      price: p.currentPrice
+    }))
+    // tránh thêm trùng sản phẩm
+    .filter(p => !orderProducts.some(op => op.id === p.id));
+  
+    setOrderProducts([...orderProducts, ...mapped]);
+    setProductPopupVisible(false);
+  };
+
+  const handleSelected = (e) => {
+    setSelectedProducts(e.selectedRowsData)
+  }
 
   return (
     <React.Fragment>
@@ -112,8 +145,8 @@ export function Orders() {
         </Column>
         <Column dataField={'Task_Start_Date'} caption={'Ngày tạo'} dataType={'date'} />
         <Column dataField={'Task_Due_Date'} caption={'Ngày giao'} dataType={'date'} />
-        <Column dataField={'Task_Priority'} caption={'Khách hàng'} />
         <Column dataField={'Task_Completion'} caption={'Số điện thoại'} />
+
       </DataGrid>
        {/* === Popup: Thêm mới === */}
        <Popup
@@ -132,7 +165,7 @@ export function Orders() {
             <Form
               formData={newOrder}
               labelLocation="top"
-              colCount={2}
+              colCount={3}
               onFieldDataChanged={(e) =>
                 setNewOrder({ ...newOrder, [e.dataField]: e.value })
               }
@@ -141,69 +174,80 @@ export function Orders() {
               THÔNG TIN CHUNG KHÁCH HÀNG
               ============================== */}
               <h4 className="form-section-title">Thông tin chung khách hàng</h4>
-              <div className="form-row">
-                <div className="form-item">
-                  <SimpleItem dataField="code" editorType="dxTextBox">
-                    <Label text="Mã đơn hàng" />
-                  </SimpleItem>
-                </div>
-                <div className="form-item">
-                  <SimpleItem dataField="name" editorType="dxTextBox">
-                    <Label text="Tên đơn hàng" />
-                  </SimpleItem>
-                </div>
-                <div className="form-item">
-                  <SimpleItem dataField="email" editorType="dxTextBox">
-                    <Label text="Email" />
-                  </SimpleItem>
-                </div>
-              </div>
-
-              <div className="form-row">
-                <SimpleItem dataField="address" editorType="dxTextBox">
-                  <Label text="Địa chỉ giao hàng" />
-                </SimpleItem>
-                <SimpleItem dataField="phone" editorType="dxTextBox">
-                  <Label text="Số điện thoại KH" />
-                </SimpleItem>
-                <SimpleItem dataField="phone" editorType="dxTextBox">
-                  <Label text="Số điện thoại người nhận hàng" />
-                </SimpleItem>
-              </div>
-
-              <div className="form-row">
-                <SimpleItem
-                  dataField="status_payment"
-                  editorType="dxSelectBox"
-                  editorOptions={{ items: ['Chuyển khoản', 'Tiền mặt'] }}
-                >
-                  <Label text="Phương thức thanh toán" />
-                </SimpleItem>
-
-                <SimpleItem
-                  dataField="status"
-                  editorType="dxSelectBox"
-                  editorOptions={{ items: ['Đang xử lý', 'Hoàn tất', 'Đã hủy'] }}
-                >
-                  <Label text="Trạng thái" />
-                </SimpleItem>
-
-                <SimpleItem dataField="createdAt" editorType="dxDateBox">
-                  <Label text="Ngày tạo" />
-                </SimpleItem>
-              </div>
-
-              <div className="form-row">
-                <SimpleItem dataField="dueDate" editorType="dxDateBox">
-                  <Label text="Ngày nhận hàng" />
-                </SimpleItem>
-                <SimpleItem dataField="hourOrder" editorType="dxTextBox">
-                  <Label text="Giờ nhận hàng" />
-                </SimpleItem>
-                <SimpleItem dataField="description" editorType="dxTextBox">
-                  <Label text="Mô tả thêm" />
-                </SimpleItem>
-              </div>
+              <SimpleItem 
+                dataField="code" 
+                editorType="dxTextBox"
+              >
+                <Label text="Mã đơn hàng" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="name" 
+                editorType="dxTextBox"
+              >
+                <Label text="Tên đơn hàng" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="email" 
+                editorType="dxTextBox"
+              >
+                <Label text="Email" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="address" 
+                editorType="dxTextBox"
+              >
+                <Label text="Địa chỉ giao hàng" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="phone" 
+                editorType="dxTextBox"
+              >
+                <Label text="Số điện thoại KH" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="phone" 
+                editorType="dxTextBox"
+              >
+                <Label text="Số điện thoại người nhận hàng" />
+              </SimpleItem>
+              <SimpleItem
+                dataField="status_payment"
+                editorType="dxSelectBox"
+                editorOptions={{ items: ['Chuyển khoản', 'Tiền mặt'] }}
+              >
+                <Label text="Phương thức thanh toán" />
+              </SimpleItem>
+              <SimpleItem
+                dataField="status"
+                editorType="dxSelectBox"
+                editorOptions={{ items: ['Đang xử lý', 'Hoàn tất', 'Đã hủy'] }}
+              >
+                <Label text="Trạng thái" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="createdAt" 
+                editorType="dxDateBox"
+              >
+                <Label text="Ngày tạo" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="dueDate" 
+                editorType="dxDateBox"
+              >
+                <Label text="Ngày nhận hàng" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="hourOrder" 
+                editorType="dxTextBox"
+              >
+                <Label text="Giờ nhận hàng" />
+              </SimpleItem>
+              <SimpleItem 
+                dataField="description" 
+                editorType="dxTextBox"
+              >
+                <Label text="Mô tả thêm" />
+              </SimpleItem>
             </Form>
             <hr />
 
@@ -255,12 +299,27 @@ export function Orders() {
                   calculateCellValue={(data) => data.quantity * data.price}
                   width={130}
                 />
-                <Column type="buttons" caption="Hành động" width={100}>
+                <Column type="buttons" caption="Hành động" width={100} >
                   <Button name="delete" />
                 </Column>
               </DataGrid>
-            </div>
+              <div className="order-summary">
+                <div className="summary-item">
+                  <label>Tổng tiền vốn:</label>
+                  <span>{totalCost.toLocaleString()} đ</span>
+                </div>
 
+                <div className="summary-item">
+                  <label>Tổng tiền lãi:</label>
+                  <span>{(totalPrice - totalCost).toLocaleString()} đ</span>
+                </div>
+
+                <div className="summary-item">
+                  <label>Thành tiền:</label>
+                  <span>{totalPrice.toLocaleString()} đ</span>
+                </div>
+              </div>
+            </div>
             <div className="popup-actions">
               <button className="btn btn-cancel" onClick={() => setCreatePopupVisible(false)}>
                 Hủy
@@ -309,30 +368,82 @@ export function Orders() {
           <button className="btn btn-save" onClick={handleApplyFilter}>Lọc</button>
         </div>
       </Popup>
+
+      {/* ==== Popup: thêm sản phẩm ====*/}
+       <Popup
+        visible={isProductPopupVisible}
+        onHiding={() => setProductPopupVisible(false)}
+        showTitle={true}
+        title="Chọn sản phẩm"
+        width={700}
+        height={600}
+      >
+        <DataGrid
+          dataSource={dsProducts}
+          keyExpr="_id"
+          showBorders={true}
+          selection={{ mode: "multiple" }}  // checkbox
+          onSelectionChanged={(e) => handleSelected(e)}
+        >
+          <Column dataField="code" caption="Mã SP" width={120} />
+          <Column dataField="name" caption="Tên SP" />
+          <Column dataField="basePrice" caption="Giá vốn" format="currency" width={120} />
+          <Column dataField="currentPrice" caption="Giá bán" format="currency" width={120} />
+        </DataGrid>
+
+        <div className="popup-actions">
+          <button className="btn btn-cancel" onClick={() => setProductPopupVisible(false)}>
+            Hủy
+          </button>
+          <button
+            className="btn btn-save"
+            onClick={() => handleAddSelectedProducts()}
+          >
+            Thêm sản phẩm
+          </button>
+        </div>
+      </Popup>
+      {/* ==== End Popup: thêm sản phẩm ====*/}
     </React.Fragment>
   );
 }
 
-const dataSource = new DataSource({
-  store: {
-    version: 2,
-    type: 'odata',
-    key: 'Task_ID',
-    url: 'https://js.devexpress.com/Demos/DevAV/odata/Tasks'
-  },
-  expand: 'ResponsibleEmployee',
-  select: [
-    'Task_ID',
-    'Task_Subject',
-    'Task_Start_Date',
-    'Task_Due_Date',
-    'Task_Status',
-    'Task_Priority',
-    'Task_Completion',
-    'ResponsibleEmployee/Employee_Full_Name'
-  ]
-});
+  export const flowerDataSource = (appliedFilter) =>
+    new DataSource({
+      store: new CustomStore({
+        key: "_id",
+        load: async (loadOptions) => {
+          const response = await API.post("/flowers/getAll", {
+            search: appliedFilter.txtSearch || "",
+            filter: appliedFilter || {},
+          });
+          return {
+            data: response.data?.data?.data ?? [],
+            totalCount: response.data?.data?.pagination?.totalItems ?? 0
+          }
+        },
+      })
+    });
 
+  const dataSource = new DataSource({
+    store: {
+      version: 2,
+      type: 'odata',
+      key: 'Task_ID',
+      url: 'https://js.devexpress.com/Demos/DevAV/odata/Tasks'
+    },
+    expand: 'ResponsibleEmployee',
+    select: [
+      'Task_ID',
+      'Task_Subject',
+      'Task_Start_Date',
+      'Task_Due_Date',
+      'Task_Status',
+      'Task_Priority',
+      'Task_Completion',
+      'ResponsibleEmployee/Employee_Full_Name'
+    ]
+  });
 const priorities = [
   { name: 'High', value: 4 },
   { name: 'Urgent', value: 3 },

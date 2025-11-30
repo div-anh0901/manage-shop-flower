@@ -169,11 +169,6 @@
   overflow-y: auto;
   flex: 1;
 
-  .form-row {
-    display: flex;
-    
-  }
-
   .form-section-title {
     margin-top: 10px;
     color: #333;
@@ -253,6 +248,18 @@
       opacity: 0.9;
       transform: translateY(-1px);
     }
+  }
+
+  .order-summary {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    gap: 40px;
+  }
+  
+  .summary-item label {
+    font-weight: bold;
+    margin-right: 8px;
   }
 }
 

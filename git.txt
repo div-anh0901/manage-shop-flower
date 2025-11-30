@@ -1,1 +1,138 @@
-git@github.com:DevExpress/devextreme-react-template.git
+ "<Popup
+          visible={isCreatePopupVisible}
+          onHiding={() => setCreatePopupVisible(false)}
+          showTitle={true}
+          title="Thêm mới đơn hàng"
+          width="100%"
+          height="100%"
+          fullScreen={true}  // 🔥 DevExtreme hỗ trợ trực tiếp fullScreen mode
+          dragEnabled={false}
+          closeOnOutsideClick={false}
+        >
+          <div className="order-form-fullscreen">
+            {/* Nội dung form thêm mới giữ nguyên */}
+            <Form
+              formData={newOrder}
+              labelLocation="top"
+              colCount={2}
+              onFieldDataChanged={(e) =>
+                setNewOrder({ ...newOrder, [e.dataField]: e.value })
+              }
+            >
+              {/* =============================
+              THÔNG TIN CHUNG KHÁCH HÀNG
+              ============================== */}
+              <h4 className="form-section-title">Thông tin chung khách hàng</h4>
+              <SimpleItem dataField="code" editorType="dxTextBox">
+                <Label text="Mã đơn hàng" />
+              </SimpleItem>
+              <SimpleItem dataField="name" editorType="dxTextBox">
+                <Label text="Tên đơn hàng" />
+              </SimpleItem>
+              <SimpleItem dataField="email" editorType="dxTextBox">
+                <Label text="Email" />
+              </SimpleItem>
+              <SimpleItem dataField="address" editorType="dxTextBox">
+                <Label text="Địa chỉ giao hàng" />
+              </SimpleItem>
+              <SimpleItem dataField="phone" editorType="dxTextBox">
+                <Label text="Số điện thoại KH" />
+              </SimpleItem>
+              <SimpleItem dataField="phone" editorType="dxTextBox">
+                <Label text="Số điện thoại người nhận hàng" />
+              </SimpleItem>
+              <SimpleItem
+                dataField="status_payment"
+                editorType="dxSelectBox"
+                editorOptions={{ items: ['Chuyển khoản', 'Tiền mặt'] }}
+              >
+                <Label text="Phương thức thanh toán" />
+              </SimpleItem>
+              <SimpleItem
+                dataField="status"
+                editorType="dxSelectBox"
+                editorOptions={{ items: ['Đang xử lý', 'Hoàn tất', 'Đã hủy'] }}
+              >
+                <Label text="Trạng thái" />
+              </SimpleItem>
+              <SimpleItem dataField="createdAt" editorType="dxDateBox">
+                <Label text="Ngày tạo" />
+              </SimpleItem>
+              <SimpleItem dataField="dueDate" editorType="dxDateBox">
+                <Label text="Ngày nhận hàng" />
+              </SimpleItem>
+              <SimpleItem dataField="hourOrder" editorType="dxTextBox">
+                <Label text="Giờ nhận hàng" />
+              </SimpleItem>
+              <SimpleItem dataField="description" editorType="dxTextBox">
+                <Label text="Mô tả thêm" />
+              </SimpleItem>
+            </Form>
+            <hr />
+
+            {/* =============================
+                  BẢNG SẢN PHẨM TRONG ĐƠN HÀNG
+            ============================== */}
+            <div className="product-section">
+              <div className="product-header">
+                <h4>Danh sách sản phẩm</h4>
+                <button className="btn btn-add-product" onClick={handleAddProduct}>
+                  + Thêm sản phẩm
+                </button>
+              </div>
+
+              <DataGrid
+                dataSource={orderProducts}
+                keyExpr="id"
+                showBorders={true}
+                columnAutoWidth={true}
+                onRowRemoved={(e) => handleRemoveProduct(e.data.id)}
+                editing={{ allowDeleting: true, mode: 'row' }}
+              >
+                <Column dataField="code" caption="Mã sản phẩm" />
+                <Column dataField="name" caption="Tên sản phẩm" />
+                <Column
+                  dataField="quantity"
+                  caption="Số lượng"
+                  dataType="number"
+                  editorType="dxNumberBox"
+                  width={100}
+                  onValueChanged={(e) => handleUpdateTotals()}
+                />
+                <Column
+                  dataField="cost"
+                  caption="Giá vốn"
+                  dataType="number"
+                  width={120}
+                  onValueChanged={(e) => handleUpdateTotals()}
+                />
+                <Column
+                  dataField="price"
+                  caption="Giá bán"
+                  dataType="number"
+                  width={120}
+                  onValueChanged={(e) => handleUpdateTotals()}
+                />
+                <Column
+                  caption="Thành tiền"
+                  calculateCellValue={(data) => data.quantity * data.price}
+                  width={130}
+                />
+                <Column type="buttons" caption="Hành động" width={100}>
+                  <Button name="delete" />
+                </Column>
+              </DataGrid>
+            </div>
+            <div className="popup-actions">
+              <button className="btn btn-cancel" onClick={() => setCreatePopupVisible(false)}>
+                Hủy
+              </button>
+              <button className="btn btn-save" onClick={handleSaveOrder}>
+                Lưu
+              </button>
+            </div>
+          </div>
+        </Popup>
+"
+
+thiết kế mấy dòng bên dươi chỗ danh sách sản phẩm gồm 3 trường, 

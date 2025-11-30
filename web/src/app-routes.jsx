@@ -1,5 +1,6 @@
 import { HomePage, TasksPage, ProfilePage , OrderPage} from './pages';
 import { withNavigationWatcher } from './contexts/navigation-hooks';
+import { Product } from './pages/products/products';
 
 const routeData = [
     {
@@ -17,6 +18,10 @@ const routeData = [
     {
         path: '/orders',
         element: OrderPage
+    },
+    {
+        path: '/products',
+        element: Product
     }
 ];
 

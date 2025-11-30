@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, createContext } from 'react';
 import { getUser, signIn as sendSignInRequest } from '../api/auth';
 
-
 const AuthContext = createContext({ loading: false });
 
 function AuthProvider(props) {

@@ -1,0 +1,1 @@
+export const templateImport = import.meta.env.VITE_API_BASE_TEMPLATE_URL + "files/flowers_template.xlsx"

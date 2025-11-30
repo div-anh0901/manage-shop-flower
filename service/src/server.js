@@ -1,23 +1,42 @@
 const express = require("express");
-const mongoose = require("mongoose");
+
 const dotenv = require("dotenv");
-const userRoutes = require("./routes/router");
+const router = require('./routers');
+const helmet = require('helmet');
+const compression = require('compression');
+const cors = require('cors');
+const connectDB = require("./configs/connectDB");
+const errorMiddleware = require("./utils/errorMiddleware");
+const logMiddleware = require("./utils/logMiddleware");
+const path = require("path");
 dotenv.config();
 const app = express();
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+}));
+
 // Middleware
+app.use(logMiddleware);
+app.use(helmet());
+app.use(compression());
 app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+}))
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+//connectDB
+connectDB();
 
+// Cho phép truy cập thư mục 'files' tĩnh
+app.use("/files", express.static(path.join(__dirname, "../../files")));
 
-  // Import routes
+// Import routes
+app.use("/api", router);
 
-app.use("/users", userRoutes);
+// 🔥 Global Error Handler
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

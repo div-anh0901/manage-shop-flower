@@ -28,3 +28,5 @@ lerna-debug.log*
 dist
 dist-ssr
 .env
+
+/Users/mac/Desktop/developer/manage-flower-shop/web

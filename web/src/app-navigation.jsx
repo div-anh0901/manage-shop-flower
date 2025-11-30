@@ -5,9 +5,14 @@ export const navigation = [
     icon: 'home'
   },
   {
+    text: 'Products',
+    path: '/products',
+    icon: 'product'
+  },
+  {
     text: 'Orders',
     path: '/orders',
-    icon: 'home'
+    icon: 'cart'
   },
   {
     text: 'Examples',
